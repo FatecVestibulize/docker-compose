@@ -1,10 +1,7 @@
-version: '3.8'
-
 services:
-  # MySQL Database
   mysql:
     image: mysql:8.0
-    container_name: vestibulize-mysql-prod
+    container_name: vestibulize-mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
@@ -14,18 +11,13 @@ services:
     ports:
       - "${MYSQL_PORT:-3306}:3306"
     volumes:
-      - mysql_data_prod:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
+      - ./back-api/src/main/resources/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - vestibulize-network-prod
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
-
-  # Backend API (using Docker Hub image)
+      - vestibulize-network
   backend:
-    image: ${DOCKER_USERNAME:-seu-usuario}/vestibulize-back-api:${VERSION:-latest}
-    container_name: vestibulize-backend-prod
+    image: ${DOCKER_USERNAME:-gabrielrenato3}/vestibulize-back-api:${VERSION:-latest}
+    container_name: vestibulize-backend
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -37,41 +29,26 @@ services:
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     depends_on:
-      mysql:
-        condition: service_healthy
+      - mysql
     networks:
-      - vestibulize-network-prod
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Frontend (using Docker Hub image)
+      - vestibulize-network
   frontend:
-    image: ${DOCKER_USERNAME:-seu-usuario}/vestibulize-front-web:${VERSION:-latest}
-    container_name: vestibulize-frontend-prod
+    image: ${DOCKER_USERNAME:-gabrielrenato3}/vestibulize-front-web:${VERSION:-latest}
+    container_name: vestibulize-frontend
     restart: unless-stopped
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:8080/v1}
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
     networks:
-      - vestibulize-network-prod
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - vestibulize-network
 
 volumes:
-  mysql_data_prod:
+  mysql_data:
     driver: local
 
 networks:
-  vestibulize-network-prod:
+  vestibulize-network:
     driver: bridge
