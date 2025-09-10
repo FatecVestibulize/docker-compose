@@ -1,7 +1,8 @@
+name: vestibulize
 services:
   mysql:
     image: mysql:8.0
-    container_name: vestibulize-mysql
+    container_name: mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
@@ -17,7 +18,7 @@ services:
       - vestibulize-network
   backend:
     image: ${DOCKER_USERNAME:-gabrielrenato3}/vestibulize-back-api:${VERSION:-latest}
-    container_name: vestibulize-backend
+    container_name: backend-api
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -34,7 +35,7 @@ services:
       - vestibulize-network
   frontend:
     image: ${DOCKER_USERNAME:-gabrielrenato3}/vestibulize-front-web:${VERSION:-latest}
-    container_name: vestibulize-frontend
+    container_name: frontend-web
     restart: unless-stopped
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:8080/v1}
