@@ -17,7 +17,7 @@ services:
     networks:
       - vestibulize-network
   backend:
-    image: ${DOCKER_USERNAME:-gabrielrenato3}/vestibulize-back-api:${VERSION:-latest}
+    image: ${DOCKER_USERNAME:-vestibulize}/back-api:${VERSION:-latest}
     container_name: backend-api
     restart: unless-stopped
     environment:
@@ -34,7 +34,7 @@ services:
     networks:
       - vestibulize-network
   frontend:
-    image: ${DOCKER_USERNAME:-gabrielrenato3}/vestibulize-front-web:${VERSION:-latest}
+    image: ${DOCKER_USERNAME:-vestibulize}/front-web:${VERSION:-latest}
     container_name: frontend-web
     restart: unless-stopped
     environment:
