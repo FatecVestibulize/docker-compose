@@ -1,190 +1,134 @@
-# Vestibulize - Docker Setup
-
-Este projeto inclui configuração completa do Docker para desenvolvimento e produção.
-
-## Estrutura
-
-- **Backend**: Spring Boot API com MySQL
-- **Frontend**: React/Vite com Nginx
-- **Database**: MySQL 8.0
-
-## Pré-requisitos
-
-- Docker
-- Docker Compose
-
-## Como usar
-
-### 1. Desenvolvimento
-
-```bash
-# Construir e iniciar todos os serviços
-docker-compose up --build
-
-# Executar em background
-docker-compose up -d --build
-
-# Ver logs
-docker-compose logs -f
-
-# Parar todos os serviços
-docker-compose down
+# Vestibulize 📚
+ 
+> Plataforma web para gestão de estudos vestibulares — organização de cronogramas, conteúdos, rotinas e comunidade colaborativa entre estudantes.
+ 
+![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.9-brightgreen?style=flat-square&logo=springboot)
+![React](https://img.shields.io/badge/React-19.1.1-61DAFB?style=flat-square&logo=react)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square&logo=mysql)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker)
+![AWS S3](https://img.shields.io/badge/AWS-S3-FF9900?style=flat-square&logo=amazons3)
+ 
+---
+ 
+## 📖 Sobre o projeto
+ 
+O vestibular exige organização e disciplina durante um longo período de preparação. A falta de planejamento, dificuldade em gerenciar cronogramas e a ausência de um ambiente colaborativo impactam diretamente a performance dos estudantes.
+ 
+O **Vestibulize** é uma plataforma web que centraliza tudo que o vestibulando precisa:
+ 
+- 📅 Cronogramas e rotinas de estudo personalizados
+- 📝 Gestão de conteúdos didáticos e anotações
+- 🤖 Resumos automáticos gerados por IA (OpenAI GPT-4o-mini)
+- 💬 Fórum colaborativo entre estudantes
+- 📧 Notificações por e-mail via SendGrid
+- ☁️ Armazenamento de arquivos no AWS S3
+---
+ 
+## 🗂️ Repositórios
+ 
+| Repositório | Descrição | Linguagem |
+|---|---|---|
+| [FatecVestibulize/back-api](https://github.com/FatecVestibulize/back-api) | API REST com Spring Boot 3 + Java 17 | Java |
+| [FatecVestibulize/front-web](https://github.com/FatecVestibulize/front-web) | Interface web com React 19 + Vite | JavaScript |
+| [FatecVestibulize/docker-compose](https://github.com/FatecVestibulize/docker-compose) | Orquestração dos containers (este repositório) | Shell |
+ 
+---
+ 
+## 🏗️ Arquitetura
+ 
 ```
-
-### 2. Apenas o banco de dados
-
-```bash
-# Iniciar apenas o MySQL
-docker-compose up mysql
-
-# Conectar ao banco
-docker exec -it vestibulize-mysql mysql -u vestibulize -p tg_vestibulize
+┌─────────────────────────────────────────────────────────┐
+│                        Usuário                          │
+└────────────────────────┬────────────────────────────────┘
+                         │
+          ┌──────────────▼──────────────┐
+          │     Front-end (React/Vite)   │
+          │         Porta 80 (Nginx)     │
+          └──────────────┬──────────────┘
+                         │ HTTP (REST)
+          ┌──────────────▼──────────────┐
+          │      API (Spring Boot)       │
+          │         Porta 8080           │
+          └──────┬───────────────┬───────┘
+                 │               │
+    ┌────────────▼───┐   ┌───────▼────────────┐
+    │  MySQL 8.0     │   │  Integrações        │
+    │  Porta 3306    │   │  · AWS S3           │
+    └────────────────┘   │  · OpenAI API       │
+                         │  · SendGrid         │
+                         └────────────────────┘
 ```
-
-### 3. Rebuild de um serviço específico
-
+ 
+---
+ 
+## 🐳 Como executar localmente
+ 
+**Pré-requisitos:** Docker e Docker Compose instalados.
+ 
 ```bash
-# Rebuild do backend
-docker-compose up --build backend
-
-# Rebuild do frontend
-docker-compose up --build frontend
+# 1. Clone este repositório
+git clone https://github.com/FatecVestibulize/docker-compose.git
+cd docker-compose
+ 
+# 2. Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o .env com suas credenciais
+ 
+# 3. Suba os containers
+docker compose up -d
+ 
+# 4. Acesse a aplicação
+# Front-end: http://localhost
+# API:       http://localhost:8080
 ```
-
-## URLs de Acesso
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8080/v1
-- **MySQL**: localhost:3306
-
-## Variáveis de Ambiente
-
-### Backend
-- `SPRING_PROFILES_ACTIVE=docker`
-- `MYSQL_USER=vestibulize`
-- `MYSQL_PASSWORD=vestibulize123`
-- `JWT_SECRET=mySecretKey123456789012345678901234567890`
-
-### Frontend
-- `VITE_API_URL=http://localhost:8080/v1`
-
-### MySQL
-- `MYSQL_ROOT_PASSWORD=root`
-- `MYSQL_DATABASE=tg_vestibulize`
-
-## Comandos Úteis
-
-```bash
-# Limpar volumes (CUIDADO: apaga dados do banco)
-docker-compose down -v
-
-# Ver status dos containers
-docker-compose ps
-
-# Executar comandos no container
-docker exec -it vestibulize-backend bash
-docker exec -it vestibulize-frontend sh
-
-# Ver logs de um serviço específico
-docker-compose logs backend
-docker-compose logs frontend
-docker-compose logs mysql
+ 
+---
+ 
+## ⚙️ Variáveis de ambiente
+ 
+Crie um arquivo `.env` na raiz com base no `.env.example`:
+ 
+```env
+# Banco de dados
+DB_HOST=db
+DB_PORT=3306
+DB_NAME=vestibulize
+DB_USER=seu_usuario
+DB_PASSWORD=sua_senha
+ 
+# JWT
+JWT_SECRET=seu_secret_jwt
+ 
+# AWS S3
+AWS_ACCESS_KEY=sua_access_key
+AWS_SECRET_KEY=sua_secret_key
+AWS_BUCKET=seu_bucket
+AWS_REGION=sua_regiao
+ 
+# OpenAI
+OPENAI_API_KEY=sua_api_key
+ 
+# SendGrid
+SENDGRID_API_KEY=sua_api_key
+SENDGRID_FROM_EMAIL=seu_email
 ```
-
-## Health Checks
-
-Todos os serviços incluem health checks:
-
-- **MySQL**: `mysqladmin ping`
-- **Backend**: `curl http://localhost:8080/v1/actuator/health`
-- **Frontend**: `wget http://localhost:3000/health`
-
-## Troubleshooting
-
-### Porta já em uso
-```bash
-# Verificar processos usando as portas
-lsof -i :3000
-lsof -i :8080
-lsof -i :3306
-
-# Parar processos se necessário
-kill -9 <PID>
-```
-
-### Problemas de build
-```bash
-# Limpar cache do Docker
-docker system prune -a
-
-# Rebuild sem cache
-docker-compose build --no-cache
-```
-
-### Problemas de banco
-```bash
-# Resetar banco de dados
-docker-compose down -v
-docker-compose up mysql
-```
-
-## Docker Hub - Publicar Imagens
-
-### 1. Preparação
-
-```bash
-# Fazer login no Docker Hub
-docker login
-
-# Criar conta no Docker Hub se não tiver: https://hub.docker.com
-```
-
-### 2. Build e Push das Imagens
-
-```bash
-# Usar o script automatizado (recomendado)
-./docker-push.sh seu-usuario-dockerhub v1.0.0
-
-# Ou fazer manualmente:
-docker build -t seu-usuario-dockerhub/vestibulize-back-api:latest ./back-api
-docker build -t seu-usuario-dockerhub/vestibulize-front-web:latest ./front-web
-
-docker push seu-usuario-dockerhub/vestibulize-back-api:latest
-docker push seu-usuario-dockerhub/vestibulize-front-web:latest
-```
-
-### 3. Usar Imagens do Docker Hub
-
-```bash
-# Usar o docker-compose de produção
-cp .env.prod.example .env.prod
-# Editar .env.prod com suas configurações
-
-docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d
-```
-
-### 4. Comandos Úteis para Docker Hub
-
-```bash
-# Listar suas imagens
-docker images | grep seu-usuario-dockerhub
-
-# Remover imagens locais
-docker rmi seu-usuario-dockerhub/vestibulize-back-api:latest
-docker rmi seu-usuario-dockerhub/vestibulize-front-web:latest
-
-# Baixar imagens do Docker Hub
-docker pull seu-usuario-dockerhub/vestibulize-back-api:latest
-docker pull seu-usuario-dockerhub/vestibulize-front-web:latest
-```
-
-## Produção
-
-Para produção, considere:
-
-1. Usar secrets do Docker para senhas
-2. Configurar SSL/TLS
-3. Usar um reverse proxy (nginx/traefik)
-4. Configurar backup automático do banco
-5. Usar variáveis de ambiente seguras
-6. Usar imagens do Docker Hub para deploy
+ 
+---
+ 
+## 🛠️ Stack completa
+ 
+| Camada | Tecnologias |
+|---|---|
+| Back-end | Java 17, Spring Boot 3.4.9, Spring Security, Spring Data JPA, JJWT, WebFlux |
+| Front-end | React 19.1.1, Vite, PrimeReact, JavaScript ES6+ |
+| Banco de dados | MySQL 8.0 |
+| Infraestrutura | Docker, Docker Compose, Nginx Alpine, Amazon Corretto 17 |
+| Integrações | AWS S3, OpenAI GPT-4o-mini, SendGrid |
+| Segurança | JWT (HS256), BCrypt, variáveis de ambiente via `.env` |
+ 
+---
+ 
+## 🎓 Contexto acadêmico
+ 
+Projeto desenvolvido como **Trabalho de Conclusão de Curso (TCC)** na **Fatec Ipiranga Pastor Eneas Tognini** — curso de Análise e Desenvolvimento de Sistemas.
